@@ -1,0 +1,70 @@
+-- @darain 2024
+
+-- Grid class that finds the optimum amount of rows and columns that can fit into your grid (made up of cells)
+
+--[[
+    origin_part: Part -> Instance with size and position Vectors (the grid)
+    CELL_SIZE: number ->  Applies number to give cell equal length and width
+    player: Player
+]]
+
+local grid = {}
+grid.__index = grid
+
+-- Cell part under script (customise your cell)
+local cell = script.Cell
+
+-- Note cell size remains constant after program is run
+function grid.new(origin_part, CELL_SIZE, player)
+    local self = setmetatable({}, grid);
+    
+    self.player = player
+
+    cell.Size = Vector3.new(CELL_SIZE, cell.Size.Y, CELL_SIZE)
+    self.cells = {}
+    
+    self.originpart = origin_part
+    self.origin = self:CalcOrigin(origin_part)
+
+    self._xRows, self._zRows = self:CalcRows()
+    self._Y = origin_part.Position.Y
+    
+    self:Create3D()
+    
+    return self;
+end
+
+function grid:CalcOrigin(p)
+    local edge = p.Position - Vector3.new(p.Size.X/2, 0, p.Size.Z/2)
+    local offset = Vector3.new(cell.Size.X/2, 0, cell.Size.Z/2)
+    
+    return edge + offset
+end
+
+function grid:CalcRows()
+    local xRows = math.floor(self.originpart.Size.X / cell.Size.X)
+    local zRows = math.floor(self.originpart.Size.Z / cell.Size.Z)
+    
+    print(xRows, zRows)
+    
+    return xRows, zRows
+end
+
+function grid:Create3D()
+    
+    for r1 = 0, self._xRows do
+        for r2 = 0, self._zRows do
+            local cell = cell:Clone()
+            
+            local xPos = self.origin.X + r1*cell.Size.X
+            local zPos = self.origin.Z + r2*cell.Size.Z
+            
+            cell.Position = Vector3.new(xPos, self._Y, zPos)
+            cell.Parent = workspace
+        end
+    end
+    
+    return;
+end
+
+return grid
